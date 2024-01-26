@@ -1,0 +1,7 @@
+*.xlsx
+!data.xlsx
+!template.xlsx
+build
+upload.log
+__pycache__
+*.spec
