@@ -26,6 +26,8 @@ if not os.path.isdir(os.path.dirname(cache_path)):
 result_path = f'./result/{user_name}'
 if not os.path.isdir(os.path.abspath(result_path)):
     os.makedirs(os.path.abspath(result_path))
+
+isChanging = False
     
 class WindowClass(QMainWindow, form_class) :
     def __init__(self) :
@@ -35,8 +37,8 @@ class WindowClass(QMainWindow, form_class) :
         self.setWindowTitle("CheckListMaker 0.1")
         self.statusLabel = QLabel(self.statusbar)
 
-        self.setGeometry(1470,28,400,600)
-        self.setFixedSize(450,550)
+        #self.setGeometry(1470,28,400,600)
+        #self.setFixedSize(450,550)
         
 
         '''기본값입력■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■'''
@@ -63,13 +65,21 @@ class WindowClass(QMainWindow, form_class) :
 
         self.btn_40.clicked.connect(lambda:self.addcombo_xlsx_sheetnames(self.input_00.text(),self.combo_40))
         self.btn_50.clicked.connect(lambda:self.addcombo_xlsx_sheetnames(self.input_10.text(),self.combo_50))
+        
         self.combo_40.currentTextChanged.connect(lambda:self.addcombo_xlsx_colnames(self.input_00.text(),self.combo_40.currentText(),self.combo_51))
-        self.combo_50.currentTextChanged.connect(lambda:self.display_excel_data(self.input_10.text(),self.combo_50.currentText(),self.preview_table))
         self.combo_40.currentTextChanged.connect(lambda:self.display_excel_data(self.input_00.text(),self.combo_40.currentText(),self.preview_table_2))
+        
+        self.combo_50.currentTextChanged.connect(lambda:self.display_excel_data(self.input_10.text(),self.combo_50.currentText(),self.preview_table))
 
         self.btn_20.clicked.connect(lambda:self.setDirectoryPath(self.input_20))
         self.btn_21.clicked.connect(lambda:self.파일열기(self.input_20.text()))
     
+
+        self.preview_table.currentItemChanged.connect(lambda:print("1"))
+        self.preview_table.currentCellChanged.connect(lambda:print("2"))
+        self.preview_table.cellChanged.connect(lambda row, column: self.save_to_excel(row, column))
+        #self.preview_table.currentItemChanged.connect(lambda:print("4"))
+
         self.btn_execute.clicked.connect(self.execute)
     def addcombo_xlsx_sheetnames(self,xlsx_filename,combo_object):
         #xlsx_filename = self.input_sourcePath.text()
@@ -109,13 +119,17 @@ class WindowClass(QMainWindow, form_class) :
             
                 
     def display_excel_data(self,excel_file, sheet_name, qtablewidget):
+        
         # Read Excel data
         try:
             df = pd.read_excel(excel_file, sheet_name)
         except Exception as e:
             print(f"Error reading Excel data: {e}")
             return
+        
 
+        global isChanging
+        isChanging = True
         # Clear existing data in QTableWidget
         qtablewidget.clear()
 
@@ -138,6 +152,9 @@ class WindowClass(QMainWindow, form_class) :
 
         # Resize columns to content
         qtablewidget.resizeColumnsToContents()
+        qtablewidget.resizeRowsToContents()
+
+        isChanging = False
 
     def load_enablecolnames(self):
         
@@ -311,6 +328,36 @@ class WindowClass(QMainWindow, form_class) :
         path = QFileDialog.getExistingDirectory(self)
         if path != "" :
             target.setText(path)
+
+    def save_to_excel(self, row, column):
+        if isChanging :
+            return
+        file_name = self.input_10.text()
+        sheet_name = self.combo_50.currentText()
+
+        # Get the new value from the QTableWidget
+        new_value = self.preview_table.item(row, column).text()
+
+        # Load existing Excel file with openpyxl
+        book = load_workbook(file_name)
+
+        # Access the active sheet
+        sheet = book[sheet_name]
+
+        # Convert 0-based QTableWidget coordinates to 1-based Excel coordinates
+        excel_row = row + 2
+        excel_column = column + 1
+
+        # Update the value in the Excel sheet
+        try:
+            sheet.cell(row=excel_row, column=excel_column, value=new_value)
+        except:
+            return
+
+        # Save changes back to the Excel file
+        book.save(file_name)
+
+        print("save_to_excel")
 
     def import_cache_all(self, any_widget = None):
         '''any_widget : [QLineEdit,'input_00']'''
