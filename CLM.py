@@ -55,8 +55,16 @@ class WindowClass(QMainWindow, form_class) :
         # self.btn_sheetName.clicked.connect(self.load_sheetnames)
         # self.combo_sheetName.currentTextChanged.connect(self.load_enablecolnames)
         # self.btn_execute.clicked.connect(self.execute)
-
+        try:
+            geometry = self.import_cache_all([QLabel,'label_100'])
+            x, y, width, height = map(int, geometry.split(','))
+            self.setGeometry(x, y, width, height)
+        except:
+            pass
         # self.load_sheetnames()
+        
+        if self.check_1.isChecked():
+            self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
         '''버튼 상호작용 입력■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■'''
         self.btn_00.clicked.connect(lambda:self.setFilePath(self.input_00))
         self.btn_01.clicked.connect(lambda:self.파일열기(self.input_00.text()))
@@ -81,6 +89,9 @@ class WindowClass(QMainWindow, form_class) :
         #self.preview_table.currentItemChanged.connect(lambda:print("4"))
 
         self.btn_execute.clicked.connect(self.execute)
+
+        self.check_1.stateChanged.connect(self.on_check_changed)
+        
     def addcombo_xlsx_sheetnames(self,xlsx_filename,combo_object):
         #xlsx_filename = self.input_sourcePath.text()
 
@@ -98,6 +109,9 @@ class WindowClass(QMainWindow, form_class) :
         for sheet_name in sheet_names:
             combo_object.addItem(sheet_name)
     def addcombo_xlsx_colnames(self,xlsx_filename,xlsx_sheetname,combo_object):
+        if xlsx_sheetname == "":
+            return
+
         try:
             xls = pd.read_excel(xlsx_filename, sheet_name=xlsx_sheetname)
             #xls = pd.ExcelFile(xlsx_filename,sheet_name == xlsx_sheetname)
@@ -355,17 +369,46 @@ class WindowClass(QMainWindow, form_class) :
             return
 
         # Save changes back to the Excel file
-        book.save(file_name)
+        try:
+            book.save(file_name)
+        except PermissionError :
+            self.popUp(f'엑셀 파일이 열려있습니다.\n파일을 닫고 다시 실행하세요.')
+
 
         print("save_to_excel")
 
+    def on_check_changed(self, state):
+        if state == Qt.Checked:
+            self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        else:
+            self.setWindowFlags(self.windowFlags() & ~Qt.WindowStaysOnTopHint)
+
+        self.show()
+
+    def update_coordinates(self):
+        geometry = self.geometry()
+        self.label_100.setText(f"{geometry.x()}, {geometry.y()}, {geometry.width()}, {geometry.height()}")
+
+    def moveEvent(self, event):
+        super().moveEvent(event)
+        self.update_coordinates()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.update_coordinates()
+
     def import_cache_all(self, any_widget = None):
-        '''any_widget : [QLineEdit,'input_00']'''
+        '''
+        any_widget : [QLineEdit,'input_00']
+        
+        self.import_cache_all([QComboBox,'comboBox_appNameList'])
+        '특정'할 경우, value :str 리턴
+        '''
         try:
             # Load CSV file with tab delimiter and utf-16 encoding
             df = pd.read_csv(cache_path, sep='\t', encoding='utf-16', index_col='key')
             if any_widget == None :
-                all_widgets = self.findChildren((QLineEdit,  QComboBox, QCheckBox, QPlainTextEdit, QDateEdit))
+                all_widgets = self.findChildren((QLineEdit,  QComboBox, QCheckBox, QPlainTextEdit, QDateEdit, QLabel))
             else:
                 all_widgets = [self.findChild(any_widget[0] ,any_widget[1])]
 
@@ -389,6 +432,9 @@ class WindowClass(QMainWindow, form_class) :
                         date = QDate.fromString(value, date_format)
                         widget.setDate(date)
 
+                if any_widget != None :
+                    return value
+
         except Exception as e:
             print(f"Error importing cache: {e}")
 
@@ -396,7 +442,7 @@ class WindowClass(QMainWindow, form_class) :
         try:
             data = {'key': [], 'value': []}
 
-            all_widgets = self.findChildren((QLineEdit,  QComboBox, QCheckBox, QPlainTextEdit,QDateEdit))
+            all_widgets = self.findChildren((QLineEdit,  QComboBox, QCheckBox, QPlainTextEdit,QDateEdit,QLabel))
 
             for widget in all_widgets:
                 value = ""

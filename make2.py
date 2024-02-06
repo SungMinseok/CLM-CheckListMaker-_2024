@@ -5,6 +5,7 @@ from tqdm import tqdm
 import os
 import re
 from xlsx_processing import *
+from apply_format import *
 #import numpy as np
 def make_dataframe_to_dict(data_df):
     result_dict = {col: [] for col in data_df.columns}
@@ -32,22 +33,25 @@ def process_data_template(data_file, template_file, data_sheet_name, sheet_name,
 
     template_df = pd.read_excel(template_file, sheet_name=sheet_name)
 
+    #서식저장■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+            
+
+    #서식저장■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
     final_df = pd.DataFrame()
 
     #데이터 전체
-    for j in tqdm(range(0,totalCount)):
+    for k in tqdm(range(0,totalCount)):
 
-        if (j+1) >= len(targetIdIndexList) :
-            tempDf = data_df[targetIdIndexList[j]:]
+        if (k+1) >= len(targetIdIndexList) :
+            tempDf = data_df[targetIdIndexList[k]:]
         else :
-            tempDf = data_df[targetIdIndexList[j]:targetIdIndexList[j+1]]
+            tempDf = data_df[targetIdIndexList[k]:targetIdIndexList[k+1]]
         tempDf = tempDf.reset_index()
 
         cur_dict = make_dataframe_to_dict(tempDf)
         output_df = template_df.copy(deep=True)
         #output_df = output_df.astype(str)
-
-        #skip_co
 
         #데이터 1개 기준
         for col_name, col_value in cur_dict.items():
@@ -88,13 +92,13 @@ def process_data_template(data_file, template_file, data_sheet_name, sheet_name,
                     temp_list.append(match)
                 #no_repeat_col_list.remove(col_name)
 
-                print(temp_list)
+                #print(temp_list)
 
                 new_list = []
                 new_value = ""
                 #for temp_value in temp_list:
                 for x, value in enumerate(col_value):
-                    print(x)
+                    #print(x)
                     #new_value = target_cell_value.replace(placeholder,f'{{{value}_{x}}}')
                     #for temp_col_name in temp_list:
                         #temp_value = cur_dict[temp_col_name][x]
@@ -207,18 +211,28 @@ def process_data_template(data_file, template_file, data_sheet_name, sheet_name,
                 
             #         #no_repeat_col_list = []
         
-        
-        
+            #temp_df = apply_formatting(template_file,sheet_name,output_df)
+            #output_df = pd.concat([output_df,temp_df])
+                                
+        #서식 정보를 데이터프레임에 적용
+        # 서식 정보를 데이터프레임에 적용
+        # for x in range(len(styles)):
+        #     for y in range(len(styles[x])):
+        #         style = styles[x][y]
+        #         template_df.iloc[x, y] = f'<span style="background-color: {style.fill.bgColor.rgb}">{template_df.iloc[x, y]}</span>'
+                    
         final_df = pd.concat([final_df,output_df])
 
     final_df.to_excel(result_file_name, index=False)
     
-    postprocess_cashshop(result_file_name)
+    #postprocess_cashshop(result_file_name)
+    #apply_formatting(template_file,sheet_name,final_df)
     #os.startfile(result_file_name)
+    apply_template(result_file_name, template_file, sheet_name, result_file_name)
 
 if __name__ == "__main__" :
-    data_file='data.xlsx'
-    template_file= 'template.xlsx'
+    data_file=fr'D:\파이썬결과물저장소\CLM\data.xlsx'
+    template_file= fr'D:\파이썬결과물저장소\CLM\template.xlsx'
 
     #data_sheet_name = 'Event'
     #data_sheet_name = 'Cashshop'
@@ -233,9 +247,9 @@ if __name__ == "__main__" :
     #key_column = 'Category'
     key_column = '도감 이름'
     #key_column = '길드 레벨'
-    result_path = f'test_{time.strftime("%Y%m%d_%H%M%S")}'
+    result_path = fr'd:\파이썬결과물저장소\CLM\test_{time.strftime("%Y%m%d_%H%M%S")}'
     cur_time = time.strftime('%Y%m%d_%H%M%S')
     result_file_name = os.path.join(result_path, f"{sheet_name}_{cur_time}.xlsx")
     process_data_template(data_file, template_file, data_sheet_name, sheet_name, key_column,f'{result_path}.xlsx')
 
-    os.startfile(fr'C:\Users\mssung\OneDrive\파이썬프로젝트\CLM(CheckListMaker)\{result_path}.xlsx')
+    os.startfile(fr'{result_path}.xlsx')
