@@ -18,6 +18,7 @@ from make2 import *
 import traceback
 form_class = uic.loadUiType(f'./CLM_UI.ui')[0]
 FROM_CLASS_Loading = uic.loadUiType("load.ui")[0]
+load_image = f'./etc/lcu_ui_ready_check.gif'
 user_name = os.getlogin()
 cache_path = f'./cache/cache_{user_name}.csv'
 if not os.path.isdir(os.path.dirname(cache_path)):
@@ -484,7 +485,7 @@ class loading(QWidget,FROM_CLASS_Loading):
         
         self.show()
         
-        self.movie = QMovie('lcu_ui_ready_check.gif', QByteArray(), self)
+        self.movie = QMovie(load_image, QByteArray(), self)
         self.movie.setCacheMode(QMovie.CacheAll)
         self.label.setMovie(self.movie)
         self.label.setScaledContents(True)

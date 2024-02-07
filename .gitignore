@@ -5,3 +5,5 @@ build
 upload.log
 __pycache__
 *.spec
+result
+cache
