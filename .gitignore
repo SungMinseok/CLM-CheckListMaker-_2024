@@ -1,6 +1,7 @@
 *.xlsx
 !Data_R2M.xlsx
 !Template_R2M.xlsx
+!release_note_CLM.xlsx
 build
 upload.log
 __pycache__

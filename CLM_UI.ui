@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>CheckListMaker</string>
   </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
@@ -949,6 +952,16 @@ font: bold</string>
         </property>
        </widget>
       </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="check_2">
+        <property name="text">
+         <string>실행 시 패치노트 켜기</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>
@@ -1014,15 +1027,25 @@ font: bold</string>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
        <widget class="QLabel" name="label_100">
+        <property name="font">
+         <font>
+          <pointsize>7</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>TextLabel</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLabel" name="label_101">
-        <property name="text">
-         <string>TextLabel</string>
+       <widget class="QDateTimeEdit" name="dateTimeEdit_0">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>7</pointsize>
+         </font>
         </property>
        </widget>
       </item>
@@ -1043,13 +1066,13 @@ font: bold</string>
     <property name="title">
      <string>메뉴</string>
     </property>
-    <addaction name="menu_howtouse"/>
-    <addaction name="menu_patchnote"/>
+    <addaction name="menu_0"/>
+    <addaction name="menu_1"/>
    </widget>
    <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="menu_patchnote">
+  <action name="menu_1">
    <property name="text">
     <string>패치노트</string>
    </property>
@@ -1059,7 +1082,7 @@ font: bold</string>
     <string>AD</string>
    </property>
   </action>
-  <action name="menu_howtouse">
+  <action name="menu_0">
    <property name="text">
     <string>HOW TO USE</string>
    </property>

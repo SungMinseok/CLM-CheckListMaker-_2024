@@ -16,9 +16,14 @@ from datetime import datetime
 import time
 from make2 import *
 import traceback
+from functions import *
 form_class = uic.loadUiType(f'./CLM_UI.ui')[0]
 FROM_CLASS_Loading = uic.loadUiType("load.ui")[0]
 load_image = f'./etc/lcu_ui_ready_check.gif'
+app_starttime = QDateTime.currentDateTime()#datetime.datetime.today()#.strftime("%Y-%m-%d %H:%M:%S")
+
+
+
 user_name = os.getlogin()
 cache_path = f'./cache/cache_{user_name}.csv'
 if not os.path.isdir(os.path.dirname(cache_path)):
@@ -35,12 +40,17 @@ class WindowClass(QMainWindow, form_class) :
         super().__init__()
         self.setupUi(self)
 
-        self.setWindowTitle("CheckListMaker 0.1")
-        self.statusLabel = QLabel(self.statusbar)
+        #self.statusLabel = QLabel(self.statusbar)
 
         #self.setGeometry(1470,28,400,600)
         #self.setFixedSize(450,550)
         
+        file_dict = get_recent_file_list(os.getcwd())
+        global last_modified_date
+        last_modified_date = list(file_dict.values())[0]
+
+        self.setWindowTitle(f"CheckListMaker v1.1 | {last_modified_date}")
+        self.show_patch_note()
 
         '''기본값입력■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■'''
         self.input_20.setText(os.path.abspath(result_path))
@@ -66,6 +76,9 @@ class WindowClass(QMainWindow, form_class) :
         
         if self.check_1.isChecked():
             self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+
+        self.dateTimeEdit_0.setDateTime(app_starttime)
+
         '''버튼 상호작용 입력■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■'''
         self.btn_00.clicked.connect(lambda:self.setFilePath(self.input_00))
         self.btn_01.clicked.connect(lambda:self.파일열기(self.input_00.text()))
@@ -92,6 +105,11 @@ class WindowClass(QMainWindow, form_class) :
         self.btn_execute.clicked.connect(self.execute)
 
         self.check_1.stateChanged.connect(self.on_check_changed)
+
+
+
+        #self.menu_1.triggered.connect(lambda : self.파일열기("release_note_R2A.xlsx"))
+        self.menu_1.triggered.connect(self.show_patch_note)
         
     def addcombo_xlsx_sheetnames(self,xlsx_filename,combo_object):
         #xlsx_filename = self.input_sourcePath.text()
@@ -100,15 +118,22 @@ class WindowClass(QMainWindow, form_class) :
         try:
             #xls = pd.read_excel(xlsx_filename, sheet_name=None)
             xls = pd.ExcelFile(xlsx_filename)
-        except :
-            self.popUp(f'엑셀파일을 먼저 선택해야 합니다.')
+        except Exception as e:
+            self.popUp(f'엑셀파일을 먼저 선택해야 합니다.\n{e}')
             return
         
         #sheet_names = xls.keys() if isinstance(xls, dict) else xls.sheet_names
         sheet_names = xls.sheet_names
+        previous_text = combo_object.currentText()
         combo_object.clear()
+        
         for sheet_name in sheet_names:
-            combo_object.addItem(sheet_name)
+            try:
+                combo_object.addItem(sheet_name)
+            except:
+                continue
+
+        combo_object.setCurrentText(previous_text)
     def addcombo_xlsx_colnames(self,xlsx_filename,xlsx_sheetname,combo_object):
         if xlsx_sheetname == "":
             return
@@ -126,15 +151,19 @@ class WindowClass(QMainWindow, form_class) :
         names = xls.columns.tolist()
         combo_object.clear()
         for name in names:
-            combo_object.addItem(name)
+            try:
+                combo_object.addItem(name)
 
+            except:
+                continue
 
         #self.load_enablecolnames()
         #self.apply_colname(self.combo_sheetName.currentText())
             
                 
     def display_excel_data(self,excel_file, sheet_name, qtablewidget):
-        
+        if sheet_name == "":
+            return
         # Read Excel data
         try:
             df = pd.read_excel(excel_file, sheet_name)
@@ -171,26 +200,26 @@ class WindowClass(QMainWindow, form_class) :
 
         isChanging = False
 
-    def load_enablecolnames(self):
+    # def load_enablecolnames(self):
         
-        xlsx_filename = self.input_sourcePath.text()
-        sheet_name = self.combo_sheetName.currentText()
+    #     xlsx_filename = self.input_sourcePath.text()
+    #     sheet_name = self.combo_sheetName.currentText()
 
-        # xls의 sheet_name의 열 이름을 불러와서 입력하는 코드 추가
-        try:    
-            df = xls[sheet_name] if isinstance(xls, dict) else pd.read_excel(xlsx_filename, sheet_name=sheet_name)
-        except: 
-            return
+    #     # xls의 sheet_name의 열 이름을 불러와서 입력하는 코드 추가
+    #     try:    
+    #         df = xls[sheet_name] if isinstance(xls, dict) else pd.read_excel(xlsx_filename, sheet_name=sheet_name)
+    #     except: 
+    #         return
             
-        # Filter out "Unnamed" columns
-        valid_col_names = [col for col in df.columns if not col.startswith('Unnamed')]
+    #     # Filter out "Unnamed" columns
+    #     valid_col_names = [col for col in df.columns if not col.startswith('Unnamed')]
     
-        col_names = ', '.join(valid_col_names)
+    #     col_names = ', '.join(valid_col_names)
         
-        self.input_enableColName.clear()
-        self.input_enableColName.insertPlainText(col_names)
+    #     self.input_enableColName.clear()
+    #     self.input_enableColName.insertPlainText(col_names)
 
-        self.apply_colname(sheet_name)
+    #     self.apply_colname(sheet_name)
 
     def make_ref_info_dict(self):
         global ref_info_dict
@@ -320,13 +349,26 @@ class WindowClass(QMainWindow, form_class) :
         self.progressLabel.setText(log)
         QApplication.processEvents()
         
-    def popUp(self,desText,titleText="error"):
+    def popUp(self,desText,popup_type = "",window_name="", titleText="error"):
         msg = QMessageBox()  
         #msg.setGeometry(1520,28,400,2000)
         msg.setText(desText)
-        msg.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        msg.setWindowTitle(window_name)
 
-        x = msg.exec_()
+        msg.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        msg.setWindowFlags(msg.windowFlags() | Qt.WindowStaysOnTopHint)
+        if popup_type == 'patchnote' :
+                        # Create a checkbox
+            checkbox = QCheckBox("오늘은 그만 보기", msg)
+            #msg.setStandardButtons(QtWidgets.QMessageBox.Open | QtWidgets.QMessageBox.Cancel)
+            msg.setStandardButtons(QMessageBox.Cancel)
+
+            msg.setCheckBox(checkbox)
+            msg.setText(desText)
+            #print(checkbox.isChecked())
+            return msg.exec_(), checkbox.isChecked()
+        #x = msg.exec_()
+        
 
     def setFilePath(self,target):
         path = QFileDialog.getOpenFileName(self)
@@ -398,6 +440,36 @@ class WindowClass(QMainWindow, form_class) :
         super().resizeEvent(event)
         self.update_coordinates()
 
+    def show_patch_note(self,check_condition=True):
+        '''패치노트'''
+        try: 
+            patch_show_count = 5
+
+            if check_condition :
+                last_starttime_str = self.import_cache_all([QDateTimeEdit,'dateTimeEdit_0'])
+                last_starttime = QDateTime.fromString(last_starttime_str, Qt.ISODate)
+                patch_note_check = self.import_cache_all([QCheckBox,'check_2'])
+                is_next_day = app_starttime.date() > last_starttime.date()
+                print(f'{is_next_day=}')
+                print(f'{last_starttime=}')
+                print(f'{patch_note_check=}')
+
+                if patch_note_check.lower() == 'true' or ( patch_note_check.lower() == 'false' and is_next_day): 
+                    x, patch_see_again = self.popUp(
+                        window_name='패치노트',
+                        desText=f"업데이트 배포 일자 : {last_modified_date}\n\n최신 업데이트 항목 {patch_show_count}개\n\n{read_patch_notes('release_note_CLM.xlsx',patch_show_count)}", popup_type='patchnote')
+                
+                    self.check_2.setChecked(not patch_see_again)
+
+            else:
+                self.popUp(
+                        window_name='패치노트',
+                        desText=f"업데이트 배포 일자 : {last_modified_date}\n\n최신 업데이트 항목 {patch_show_count}개\n\n{read_patch_notes('release_note_CLM.xlsx',patch_show_count)}", popup_type='patchnote')
+                
+        except Exception as e:
+            print(e)
+            pass
+
     def import_cache_all(self, any_widget = None):
         '''
         any_widget : [QLineEdit,'input_00']
@@ -409,7 +481,7 @@ class WindowClass(QMainWindow, form_class) :
             # Load CSV file with tab delimiter and utf-16 encoding
             df = pd.read_csv(cache_path, sep='\t', encoding='utf-16', index_col='key')
             if any_widget == None :
-                all_widgets = self.findChildren((QLineEdit,  QComboBox, QCheckBox, QPlainTextEdit, QDateEdit, QLabel))
+                all_widgets = self.findChildren((QLineEdit,  QComboBox, QCheckBox, QPlainTextEdit, QDateEdit, QLabel,QDateTimeEdit))
             else:
                 all_widgets = [self.findChild(any_widget[0] ,any_widget[1])]
 
@@ -428,7 +500,7 @@ class WindowClass(QMainWindow, form_class) :
                         widget.setChecked(value.lower() == 'true')
                     elif isinstance(widget, QPlainTextEdit):
                         widget.setPlainText(value)
-                    elif isinstance(widget, QDateEdit):
+                    elif isinstance(widget, (QDateEdit,QDateTimeEdit)):
                         date_format = "yyyy-MM-dd"
                         date = QDate.fromString(value, date_format)
                         widget.setDate(date)
@@ -443,7 +515,7 @@ class WindowClass(QMainWindow, form_class) :
         try:
             data = {'key': [], 'value': []}
 
-            all_widgets = self.findChildren((QLineEdit,  QComboBox, QCheckBox, QPlainTextEdit,QDateEdit,QLabel))
+            all_widgets = self.findChildren((QLineEdit,  QComboBox, QCheckBox, QPlainTextEdit,QDateEdit,QLabel,QDateTimeEdit))
 
             for widget in all_widgets:
                 value = ""
@@ -455,6 +527,9 @@ class WindowClass(QMainWindow, form_class) :
                     value = str(widget.isChecked())
                 elif isinstance(widget, QPlainTextEdit):
                     value = widget.toPlainText()
+
+                elif isinstance(widget, QDateTimeEdit):
+                    value = widget.dateTime().toString(Qt.ISODate)
 
                 if value != "":
                     key = widget.objectName()

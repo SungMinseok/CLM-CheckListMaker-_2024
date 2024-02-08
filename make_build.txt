@@ -1,1 +1,1 @@
-pyinstaller -w -F -i son.ico C:\Users\mssung\OneDrive\파이썬프로젝트\CLM(CheckListMaker)\CLM.py -o C:\Users\mssung\OneDrive\파이썬프로젝트\CLM(CheckListMaker)\CLM.exe
+pyinstaller -w -F -i son.ico CLM.py

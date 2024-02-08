@@ -34,7 +34,7 @@ def apply_template(target_xlsx_file, template_xlsx_file, template_sheet_name, ou
         for row_target, row_template in zip(target_ws.iter_rows(min_row=i*(template_ws.max_row-1)+1, max_row=target_ws.max_row, max_col=template_ws.max_column), template_ws.iter_rows(min_row=1, max_row=template_ws.max_row, max_col=template_ws.max_column)):
             for target_cell, template_cell in zip(row_target, row_template):
                 target_format = format_dict.get(template_cell.coordinate, {})
-                
+                print(target_cell.value)
                 if "font" in target_format:
                     target_cell.font = openpyxl.styles.Font(**target_format["font"].__dict__)
 
@@ -50,7 +50,17 @@ def apply_template(target_xlsx_file, template_xlsx_file, template_sheet_name, ou
                 if "width" in target_format:
                     target_cell.width = openpyxl.styles.Width(**target_format["width"].__dict__)
 
+        #for row_target, row_template in zip(target_ws.iter_rows(min_row=i*(template_ws.max_row-1)+1, max_row=target_ws.max_row, max_col=template_ws.max_column), template_ws.iter_rows(min_row=1, max_row=template_ws.max_row, max_col=template_ws.max_column)):
+        #    for target_cell, template_cell in zip(row_target, row_template):
+                if target_cell.value is None:
+                    # 현재 셀 값이 None인 경우 위로 이동하면서 값이 None이 아닌 곳까지 찾아서 병합
+                    above_cell = target_cell
+                    while above_cell.value is None and above_cell.row > 1:
+                        above_cell = target_ws.cell(row=above_cell.row - 1, column=above_cell.column)
 
+                    if above_cell.value is not None:
+                        # 병합 대상이 발견되면 병합
+                        target_ws.merge_cells(start_row=above_cell.row, start_column=above_cell.column, end_row=target_cell.row, end_column=target_cell.column)
     # # 서식 적용
     # for target_row in target_ws.iter_rows(min_row=2, max_row=target_ws.max_row, max_col=template_ws.max_column):
     #     for target_cell, template_cell in zip(target_row, template_ws.iter_cols(min_row=1, max_row=template_ws.max_row, max_col=template_ws.max_column)):
@@ -74,8 +84,8 @@ def apply_template(target_xlsx_file, template_xlsx_file, template_sheet_name, ou
 # 예제 사용법
 #apply_template("1.target_xlsx_file.xlsx", "2.template_xlsx_file.xlsx")
 if __name__ == "__main__" :
-    target_file = fr'd:\파이썬결과물저장소\CLM\test_20240206_110231.xlsx'
+    target_file = fr'd:\파이썬결과물저장소\CLM\result\Cashshop_20240208_125510.xlsx'
     template_file = fr'd:\파이썬결과물저장소\CLM\template.xlsx'
-    sheet_name = '길드도감재료'
+    sheet_name = 'Cashshop'
     output_name = fr'd:\파이썬결과물저장소\CLM\test_{time.strftime("%Y%m%d_%H%M%S")}_format.xlsx'
     apply_template(target_file,template_file,sheet_name,output_name)
