@@ -1,1 +1,0 @@
-pyinstaller -w -F -i son.ico CLM.py
