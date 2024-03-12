@@ -1,0 +1,10 @@
+*.xlsx
+!release_note_CLM.xlsx
+build
+upload.log
+__pycache__
+*.spec
+result
+cache
+backup
+result
