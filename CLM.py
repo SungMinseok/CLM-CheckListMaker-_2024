@@ -438,7 +438,7 @@ class WindowClass(QMainWindow, form_class) :
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.update_coordinates()
+        self.update_coordinates()#3
 
     def show_patch_note(self,check_condition=True):
         '''패치노트'''
