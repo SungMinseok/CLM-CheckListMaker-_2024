@@ -1,8 +1,6 @@
-<img src="autoBtnBox.jpg" />
+## 범용 체크리스트 자동화 툴 프로젝트
 
-
-
-## 체크리스트 생성 자동화 프로젝트
+<img src="etc/title.jpg" />
 
 ### 목차
 
@@ -44,29 +42,15 @@
     
     ```bash
     # 가상환경 생성 (python == 3.9.4)
-    python -m venv r2a
+    python -m venv CLM
     ```
 2. **외부망**:
     ```bash
     # 의존성 설치
-    cd R2A
+    cd CLM
     pip install -r requirements.txt
     ```
     
-3. **내부망**:
-    ```bash
-    # 의존성 다운로드 (외부망)
-    cd R2A
-    pip download -d pkg -r requirements.txt
-
-    # 가상환경 생성 (내부망)
-    d:\venv>python -m venv r2a
-    d:\venv>cd r2a
-    d:\venv\r2a>Scripts\activate.bat
-    
-    # 의존성 설치 (내부망)
-    (r2a) d:\venv\r2a>pip install --no-index --find-links=d:\pkg -r d:\r2a\requirements.txt
-    ```
 
 ---
 
@@ -81,57 +65,21 @@
 2. **원본PC**:
 
     ```bash
-    python R2A.py
+    python CLM.py
     ```
 
 ---
 
 ### 4. 기능
 
-1. **단위/통합 테스트 준비 자동화(pyautogui)**:
+1. **사용자 임의 양식 유지**:
 
     ```bash
-    캐릭터 텔레포트
-    0강~13강 장비 생성
-    명령어 모음 실행
-    다수의 아이템 생성
-    클래스별 최고 스펙 세팅
-    아이템/명령어 프리셋 기능
-    멀티 커맨드 기능
+    모든 데이터에 대해 사용자 임의 양식대로 문서 생성 자동화 기능
     ```
 
-2. **단위 테스트 자동화(pyautogui, tesseract, selenium)**:
+2. **데이터/템플릿 관리 기능**:
 
     ```bash
-    다수의 장비 분해 테스트
-    레벨별 스탯 데이터 테스트
-    장비 데이터 테스트
-    장비 강화 설정 테스트
-    인앱/웹 결제 테스트
-    아이템 정보 확인 테스트
-    장비 각인 증폭제 능력치 확인 테스트
-    ```
-    
-3. **인게임 확률 검증 자동화(pyautogui, tesseract)**:
-
-    ```bash
-    장비 각인 확률 검증
-    아이템 드랍 확률 검증
-    상자류 뽑기 확률 검증 테스트
-    변신/서번트 뽑기 확률 검증 테스트
-    영혼 부여 확률 검증 테스트
-    스킬 강화 확률 검증 테스트
-    슬롯 강화 확률 검증 테스트
-    ```
-    
-4. **그 외 보조 기능**:
-
-    ```bash
-    엑셀 데이터 연동 및 검색 기능
-    스크린샷 텍스트 추출 기능
-    스크린샷 텍스트 번역 기능
-    툴 정보 캐시화
-    툴 에러 로그 자동 수집 기능
-    최신 문서 검색 기능
-    툴 자동 업데이트 기능
+    데이터 및 템플릿 히스토리 관리 기능
     ```
